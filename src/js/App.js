@@ -1,14 +1,17 @@
 import React, { Component } from "react";
-
-const apiUrl = `https://api.diffbot.com/v3/article`;
+import ReactHowler from "react-howler";
+import axios from "axios";
 
 export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      answer: "",
       pressedKeys: [],
-      url: ""
+      text: "",
+      typedText: "",
+      title: "",
+      currentLetterIndx: 0,
+      isWriteLetter: true,
     };
   }
 
@@ -16,7 +19,26 @@ export default class App extends Component {
     return this.state.pressedKeys.includes(num);
   };
 
-  extractArticle
+  handleClick = async () => {
+    try {
+      let data = await axios.get(
+        "https://en.wikipedia.org/w/api.php?" +
+          new URLSearchParams({
+            action: "query",
+            titles: this.state.title,
+            format: "json",
+            prop: "extracts",
+            exintro: true,
+            explaintext: true,
+          })
+      );
+
+      let page = Object.values(data.data.query.pages)[0].extract;
+      this.setState({ text: page, currentLetterIndx: 0 });
+    } catch (err) {
+      console.error(err.message);
+    }
+  };
 
   onChange = (event) => {
     this.setState({
@@ -24,45 +46,85 @@ export default class App extends Component {
     });
   };
 
+  compareTexts = (typedText, text) => {
+    const regex = /^\s*([0-9a-zA-Z><?@+'`"~^%&\*\[\]\{\}.!#|\\\"$';,:;=/\(\)]*)\s*$/;
+
+    if (regex.test(text[this.state.currentLetterIndx])) {
+      if (
+        typedText[typedText.length - 1] !== text[this.state.currentLetterIndx]
+      ) {
+        this.setState({ isWriteLetter: false });
+      } else {
+        let newIndex = this.state.currentLetterIndx + 1;
+        this.setState({
+          currentLetterIndx: newIndex,
+          isWriteLetter: true,
+        });
+      }
+    } else {
+      let newIndex = this.state.currentLetterIndx + 1;
+      this.setState({
+        currentLetterIndx: newIndex,
+        isWriteLetter: true,
+      });
+    }
+  };
+
   handleKeyPress = (event) => {
-    console.log(this.state.pressedKeys, "pressed");
-    let newPressedKeys = this.state.pressedKeys;
-    newPressedKeys.push(event.key);
-    this.setState({ pressedKeys: newPressedKeys });
+    if (
+      event.key !== "Shift" &&
+      event.key !== "Alt" &&
+      event.key !== "Command" &&
+      event.key !== "Alt" &&
+      event.key !== "Ctrl" &&
+      event.key !== "Fn" &&
+      event.key !== "Backspace" 
+    ) {
+      let newPressedKeys = this.state.pressedKeys;
+      newPressedKeys.push(event.key);
+      let newTypedText = this.state.typedText;
+      newTypedText += event.key;
+      this.setState({ typedText: newTypedText, pressedKeys: newPressedKeys });
+      this.compareTexts(newTypedText, this.state.text);
+    }
+    event.preventDefault();
   };
 
   handleKeyUnpressed = (event) => {
     let newPressedKeys = this.state.pressedKeys;
 
     newPressedKeys = newPressedKeys.filter((key) => {
-      return key !== event.key;
+      return key !== event.key && key !== event.key.toUpperCase();
     });
     this.setState({ pressedKeys: newPressedKeys });
   };
 
   render() {
+    console.log(this.state, 'state')
     return (
       <>
         <div>
-          <textarea
-            name="url"
+          <h3>Enter your wikipedia title: </h3>
+          <input
+            name="title"
             className=""
             onChange={this.onChange}
             type="text"
-            value={this.state.url}
+            value={this.state.title}
             autoFocus
-          >
-            Enter your URL
-          </textarea>
+          />
+          <button onClick={() => this.handleClick()} type="button">
+            Enter
+          </button>
         </div>
-        <div
-          className="game-board"
-          onKeyDown={this.handleKeyPress}
-          tabIndex="0"
-          onKeyUp={this.handleKeyUnpressed}
-        >
-          Enter
-        </div>
+        {!this.state.isWriteLetter ? (
+          <ReactHowler
+            src="https://www.kessels.com/CatSounds/kitten4.wav"
+            playing={true}
+          />
+        ) : (
+          ""
+        )}
         <div>{this.state.key}</div>
         <div className="keyboard-base">
           <div
@@ -147,61 +209,61 @@ export default class App extends Component {
           <div className="key tab">Tab</div>
           <div
             className="key"
-            className={this.include("Q") ? "change_red" : "change_white"}
+            className={this.include("Q") || this.include("q") ? "change_red" : "change_white"}
           >
             Q
           </div>
           <div
             className="key"
-            className={this.include("W") ? "change_red" : "change_white"}
+            className={this.include("W") || this.include("w") ? "change_red" : "change_white"}
           >
             w
           </div>
           <div
             className="key"
-            className={this.include("E") ? "change_red" : "change_white"}
+            className={this.include("E") || this.include("e") ? "change_red" : "change_white"}
           >
             E
           </div>
           <div
             className="key"
-            className={this.include("R") ? "change_red" : "change_white"}
+            className={this.include("R") || this.include("r") ? "change_red" : "change_white"}
           >
             R
           </div>
           <div
             className="key"
-            className={this.include("T") ? "change_red" : "change_white"}
+            className={this.include("T") || this.include("t") ? "change_red" : "change_white"}
           >
             T
           </div>
           <div
             className="key"
-            className={this.include("Y") ? "change_red" : "change_white"}
+            className={this.include("Y") || this.include("y") ? "change_red" : "change_white"}
           >
             Y
           </div>
           <div
             className="key"
-            className={this.include("U") ? "change_red" : "change_white"}
+            className={this.include("U") || this.include("u") ? "change_red" : "change_white"}
           >
             U
           </div>
           <div
             className="key"
-            className={this.include("I") ? "change_red" : "change_white"}
+            className={this.include("I") || this.include("i") ? "change_red" : "change_white"}
           >
             I
           </div>
           <div
             className="key"
-            className={this.include("0") ? "change_red" : "change_white"}
+            className={this.include("0") || this.include("o") ? "change_red" : "change_white"}
           >
             O
           </div>
           <div
             className="key"
-            className={this.include("P") ? "change_red" : "change_white"}
+            className={this.include("P") || this.include("p") ? "change_red" : "change_white"}
           >
             P
           </div>
@@ -226,25 +288,25 @@ export default class App extends Component {
           <div className="key capslock">CapsLock</div>
           <div
             className="key"
-            className={this.include("A") ? "change_red" : "change_white"}
+            className={this.include("A") || this.include("a") ? "change_red" : "change_white"}
           >
             A
           </div>
           <div
             className="key"
-            className={this.include("B") ? "change_red" : "change_white"}
+            className={this.include("B") || this.include("b") ? "change_red" : "change_white"}
           >
             S
           </div>
           <div
             className="key"
-            className={this.include("D") ? "change_red" : "change_white"}
+            className={this.include("D") || this.include("d") ? "change_red" : "change_white"}
           >
             D
           </div>
           <div
             className="key"
-            className={this.include("F") ? "change_red" : "change_white"}
+            className={this.include("F") || this.include("f") ? "change_red" : "change_white"}
           >
             F
           </div>
@@ -256,25 +318,25 @@ export default class App extends Component {
           </div>
           <div
             className="key"
-            className={this.include("H") ? "change_red" : "change_white"}
+            className={this.include("H") || this.include("h") ? "change_red" : "change_white"}
           >
             H
           </div>
           <div
             className="key"
-            className={this.include("J") ? "change_red" : "change_white"}
+            className={this.include("J") || this.include("j") ? "change_red" : "change_white"}
           >
             J
           </div>
           <div
             className="key"
-            className={this.include("K") ? "change_red" : "change_white"}
+            className={this.include("K") || this.include("k") ? "change_red" : "change_white"}
           >
             K
           </div>
           <div
             className="key"
-            className={this.include("L") ? "change_red" : "change_white"}
+            className={this.include("L") || this.include("l") ? "change_red" : "change_white"}
           >
             L
           </div>
@@ -294,43 +356,43 @@ export default class App extends Component {
           <div className="key leftshift">Shift</div>
           <div
             className="key"
-            className={this.include("Z") ? "change_red" : "change_white"}
+            className={this.include("Z") || this.include("z") ? "change_red" : "change_white"}
           >
             Z
           </div>
           <div
             className="key"
-            className={this.include("X") ? "change_red" : "change_white"}
+            className={this.include("X") || this.include("x") ? "change_red" : "change_white"}
           >
             X
           </div>
           <div
             className="key"
-            className={this.include("C") ? "change_red" : "change_white"}
+            className={this.include("C") || this.include("c") ? "change_red" : "change_white"}
           >
             C
           </div>
           <div
             className="key"
-            className={this.include("V") ? "change_red" : "change_white"}
+            className={this.include("V") || this.include("v") ? "change_red" : "change_white"}
           >
             V
           </div>
           <div
             className="key"
-            className={this.include("B") ? "change_red" : "change_white"}
+            className={this.include("B") || this.include("b")? "change_red" : "change_white"}
           >
             B
           </div>
           <div
             className="key"
-            className={this.include("N") ? "change_red" : "change_white"}
+            className={this.include("N") || this.include("n") ? "change_red" : "change_white"}
           >
             N
           </div>
           <div
             className="key"
-            className={this.include("M") ? "change_red" : "change_white"}
+            className={this.include("M") || this.include("m") ? "change_red" : "change_white"}
           >
             M
           </div>
@@ -363,15 +425,21 @@ export default class App extends Component {
           <div className="key">Fn</div>
         </div>
         <div className="container">
-          <div className="container" id="quoteDisplay"></div>
-          <textarea
-            name="answer"
+          <div className="container" id="quoteDisplay">
+            <p>
+              {this.state.text.slice(0, this.state.currentLetterIndx)}
+              <span>{this.state.text.slice(this.state.currentLetterIndx)}</span>
+            </p>
+          </div>
+          <div
+            className="game-board"
             className="quote-input"
-            onChange={this.onChange}
-            type="text"
-            value={this.state.answer}
-            autoFocus
-          />
+            onKeyDown={this.handleKeyPress}
+            tabIndex="0"
+            onKeyUp={this.handleKeyUnpressed}
+          >
+            Start typing: {this.state.typedText}
+          </div>
         </div>
       </>
     );
