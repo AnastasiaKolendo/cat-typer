@@ -1,0 +1,112 @@
+h1 {
+  color: blue;
+}
+h1{
+  color: blue;
+}
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 300vh;
+  background-color: rgb(97, 77, 77);
+  margin:20px;
+  padding: 30px;
+}
+
+body, .quote-input{
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  border: 2x solid rgb(41, 32, 32);
+  outline: none;
+  width: 100%;
+  height: 8rem
+}
+
+.container {
+  background-color: sandybrown;
+  padding: 1rem;
+  border-radius: .5rem;
+  width: 700px;
+  max-width: 90%
+}
+
+.keyboard-base {
+  max-width: 1085px;
+  padding: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgb(197, 197, 197);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: repeat(30, 30px);
+  grid-template-rows: repeat(5, 60px);
+  grid-gap: 5px;
+}
+
+
+.key, .change_white, .change_red {
+  background-color: rgb(207, 204, 204);
+  border: 2px solid black;
+  border-radius: 5px;
+  grid-column: span 2;
+  font-size: 20px;
+  text-align: center;
+  padding-top: 17px;
+}
+
+.key:hover {
+border: 1px solid #eeeeee;
+
+}
+
+.delete {
+  grid-column: span 4;
+}
+
+.tab {
+  grid-column: span 3;
+}
+
+.backslash {
+  grid-column: span 3;
+}
+
+.capslock {
+  grid-column: span 4;
+}
+
+.return {
+  grid-column: span 4;
+}
+
+.leftshift {
+  grid-column: span 5;
+}
+
+.rightshift {
+  grid-column: span 5;
+}
+
+.leftctrl {
+  grid-column: span 3;
+}
+
+.command {
+  grid-column: span 3;
+  font-size: 14px;
+}
+
+.space {
+  grid-column: span 13;
+}
+.change_red{
+  background-color: sienna;
+}
+.change_white{
+  background-color: rgb(207, 204, 204);
+}
