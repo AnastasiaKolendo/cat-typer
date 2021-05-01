@@ -1,17 +1,25 @@
 import React, { Component } from "react";
 import ReactHowler from "react-howler";
 import axios from "axios";
+import Statistics from './Statistics'
 
 export default class App extends Component {
   constructor(props) {
     super(props);
+    this.sources = ['https://www.kessels.com/CatSounds/kitten4.wav']
     this.state = {
       pressedKeys: [],
       text: "",
       typedText: "",
       title: "",
       currentLetterIndx: 0,
-      isWriteLetter: true,
+      playing: false,
+      isPage: true,
+      currentSrcIndex: 0,
+      score: 0, 
+      errors: 0,
+      speed: 0,
+      timeElapsed: 0
     };
   }
 
@@ -19,11 +27,28 @@ export default class App extends Component {
     return this.state.pressedKeys.includes(num);
   };
 
+  calculateTime = () => {
+    return setInterval(this.updateTimer, 1000);
+  }
+  
+   updateTimer = () => {
+    let newTimeElapsed = this.state.timeElapsed + 1;
+    this.setState({timeElapsed: newTimeElapsed})
+    this.calculateSpeed();
+    return this.state.timeElapsed;
+   }
+
+  calculateSpeed = () => {
+    let newSpeed = Math.round(this.state.typedText.length / this.state.timeElapsed) * 60;
+    this.setState({speed: newSpeed})
+  }
+
   handleClick = async () => {
     try {
       let data = await axios.get(
         "https://en.wikipedia.org/w/api.php?" +
           new URLSearchParams({
+            origin: '*',
             action: "query",
             titles: this.state.title,
             format: "json",
@@ -33,8 +58,13 @@ export default class App extends Component {
           })
       );
 
+      console.log(data, 'page')
       let page = Object.values(data.data.query.pages)[0].extract;
-      this.setState({ text: page, currentLetterIndx: 0 });
+      if(page){
+        this.setState({ isPage: true, score: 0, errors: 0, text: page, currentLetterIndx: 0 });
+      } else {
+        this.setState({ isPage: false, text: ''})
+      }
     } catch (err) {
       console.error(err.message);
     }
@@ -53,19 +83,20 @@ export default class App extends Component {
       if (
         typedText[typedText.length - 1] !== text[this.state.currentLetterIndx]
       ) {
-        this.setState({ isWriteLetter: false });
+        let newScore = this.state.score - 1;
+        let newErrors = this.state.errors + 1
+        this.setState({ score: newScore, playing: true, errors: newErrors});
       } else {
         let newIndex = this.state.currentLetterIndx + 1;
-        this.setState({
+        let newScore = this.state.score + 1;
+        this.setState({ score: newScore,
           currentLetterIndx: newIndex,
-          isWriteLetter: true,
         });
       }
     } else {
       let newIndex = this.state.currentLetterIndx + 1;
       this.setState({
-        currentLetterIndx: newIndex,
-        isWriteLetter: true,
+        currentLetterIndx: newIndex
       });
     }
   };
@@ -78,7 +109,10 @@ export default class App extends Component {
       event.key !== "Alt" &&
       event.key !== "Ctrl" &&
       event.key !== "Fn" &&
-      event.key !== "Backspace" 
+      event.key !== "Backspace" && 
+      event.key !== 'onKeyDown' &&
+      event.key !== 'onKeyPress' &&
+      event.key !== 'onKeyUp'
     ) {
       let newPressedKeys = this.state.pressedKeys;
       newPressedKeys.push(event.key);
@@ -90,17 +124,20 @@ export default class App extends Component {
     event.preventDefault();
   };
 
+  changePlaying = () => {
+    this.setState({playing: false})
+  }
+
   handleKeyUnpressed = (event) => {
     let newPressedKeys = this.state.pressedKeys;
 
     newPressedKeys = newPressedKeys.filter((key) => {
       return key !== event.key && key !== event.key.toUpperCase();
     });
-    this.setState({ pressedKeys: newPressedKeys });
+    this.setState({ pressedKeys: newPressedKeys});
   };
 
   render() {
-    console.log(this.state, 'state')
     return (
       <>
         <div>
@@ -116,16 +153,18 @@ export default class App extends Component {
           <button onClick={() => this.handleClick()} type="button">
             Enter
           </button>
+          {!this.state.isPage ? <div id="page-error" >Sorry, this page doesn't exist. Try again</div> : ''}
         </div>
-        {!this.state.isWriteLetter ? (
           <ReactHowler
-            src="https://www.kessels.com/CatSounds/kitten4.wav"
-            playing={true}
+            playing={this.state.playing}
+            src={this.sources[this.state.currentSrcIndex]}
+            volume={0.4}
+            onEnd={this.changePlaying}
           />
-        ) : (
-          ""
-        )}
         <div>{this.state.key}</div>
+        <div >
+          <Statistics score={this.state.score} errors={this.state.errors} speed={this.state.speed} />
+        </div>
         <div className="keyboard-base">
           <div
             className="key"
@@ -427,8 +466,8 @@ export default class App extends Component {
         <div className="container">
           <div className="container" id="quoteDisplay">
             <p>
-              {this.state.text.slice(0, this.state.currentLetterIndx)}
-              <span>{this.state.text.slice(this.state.currentLetterIndx)}</span>
+              {this.state.text.slice(0, this.state.currentLetterIndx)}<mark>{this.state.text.slice(this.state.currentLetterIndx, this.state.currentLetterIndx + 1)}</mark>
+              <span>{this.state.text.slice(this.state.currentLetterIndx + 1)}</span>
             </p>
           </div>
           <div
@@ -436,7 +475,8 @@ export default class App extends Component {
             className="quote-input"
             onKeyDown={this.handleKeyPress}
             tabIndex="0"
-            onKeyUp={this.handleKeyUnpressed}
+            onKeyUp={this.handleKeyUnpressed} 
+            onFocus={this.calculateTime}
           >
             Start typing: {this.state.typedText}
           </div>
