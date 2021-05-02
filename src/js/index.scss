@@ -17,45 +17,14 @@ body {
   background-size: 1706px 1066px;
 }
 
-.input-title{
-  background-color: #edf7f6;
-  border-radius: .5rem;
-}
-
-p{
-  color:#862a57;
-}
-
-span{
-  color: #eeeeee;
-}
-
 input, button {
+  background-color: rgb(207, 204, 204);
   padding: 5px;
-  font-family:courier,arial,helvetica;
-}
-
-button{
-  background-color: #edf7f6;
-  border: 2x solid rgb(41, 32, 32);
-  border-radius: .5rem;
-}
-
-.quote-input{
-  background-color: #ffa8B6;
-  padding: 1rem;
-  border: 2x solid rgb(41, 32, 32);
-  border-radius: .5rem;
-  height: 100px;
-}
-
-.container {
   margin: 10px;
-  background-color: #a28089;
-  padding: 1rem;
+  font-family: courier,arial,helvetica;
+  font-style: italic;
+  border: 2x solid rgb(41, 32, 32);
   border-radius: .5rem;
-  border: 5x solid rgb(41, 32, 32);
-  height: 200px
 }
 
 .keyboard-base {
@@ -63,7 +32,6 @@ button{
   max-width: 1085px;
   padding: 5px;
   position: absolute;
-  margin: 10px;
   top: 75%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -155,13 +123,12 @@ button{
 .speed, .errors, .score {
   background-color: #c0ffc8;
   height: 20px;
-  width: 100px;
+  width: 150px;
   margin: 8px;
   padding: 12px;
   border-radius: 20%;
   box-shadow: black 3px 6px 3px;
 }
-
 
 mark{
   background-color:#c0ffc8;
@@ -172,13 +139,35 @@ mark{
   margin: 5px;
  }
 
- .container2{
+ .container2 {
   display: flex;
   justify-content: space-between;
-  white-space: nowrap;
+}
+
+.container {
+  margin: 10px;
+  background-color: #a28089;
+  padding: 1rem;
+  border-radius: .5rem;
+  height: 200px
 }
 
 .quoteDisplay{
   height: 100px;
 }
-p{white-space: pre-wrap;}
+
+.quote-input{
+  background-color: rgb(207, 204, 204);
+  padding: 1rem;
+  border-radius: .5rem;
+  height: 100px;
+}
+
+p{
+  white-space: pre-wrap;
+  color:#862a57;
+}
+
+.start-typing{
+  color:  #484064;
+}

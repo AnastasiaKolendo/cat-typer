@@ -9,8 +9,14 @@ import Calculator from "./Calculator";
 export default class App extends Component {
   constructor(props) {
     super(props);
-    this.sources = ["https://www.kessels.com/CatSounds/kitten4.wav", "https://www.kessels.com/CatSounds/kitten3.wav", 'https://www.kessels.com/CatSounds/cat14.wav', 'https://www.kessels.com/CatSounds/cat11.wav',
-  'https://www.kessels.com/CatSounds/cat9.wav', 'https://www.kessels.com/CatSounds/cat10.wav'];
+    this.sources = [
+      "https://www.kessels.com/CatSounds/kitten4.wav",
+      "https://www.kessels.com/CatSounds/kitten3.wav",
+      "https://www.kessels.com/CatSounds/cat14.wav",
+      "https://www.kessels.com/CatSounds/cat11.wav",
+      "https://www.kessels.com/CatSounds/cat9.wav",
+      "https://www.kessels.com/CatSounds/cat10.wav",
+    ];
     this.state = {
       pressedKeys: [],
       text: "",
@@ -25,8 +31,21 @@ export default class App extends Component {
       speed: 0,
       timeElapsed: 0,
       errorMessage: "",
-      redundentKeys: ['Tab', "Shift", "Alt", "Meta", "Control", "Fn", "Backspace", "ArrowUp", "ArrowLeft", "ArrowDown",
-      "ArrowRight", "Escape", "CapsLock"]
+      redundentKeys: [
+        "Tab",
+        "Shift",
+        "Alt",
+        "Meta",
+        "Control",
+        "Fn",
+        "Backspace",
+        "ArrowUp",
+        "ArrowLeft",
+        "ArrowDown",
+        "ArrowRight",
+        "Escape",
+        "CapsLock",
+      ],
     };
   }
 
@@ -40,14 +59,14 @@ export default class App extends Component {
 
   updateTimer = () => {
     let newTimeElapsed = this.state.timeElapsed + 1;
-    console.log(newTimeElapsed, 'time')
     this.setState({ timeElapsed: newTimeElapsed });
     this.calculateSpeed();
   };
 
   calculateSpeed = () => {
-    let newSpeed =
-      Math.round(this.state.typedText.length / this.state.timeElapsed) * 60;
+    let newSpeed = Math.round(
+      (this.state.typedText.length / this.state.timeElapsed) * 60
+    );
     this.setState({ speed: newSpeed });
   };
 
@@ -76,7 +95,7 @@ export default class App extends Component {
         timeElapsed: 0,
         score: 0,
         errors: 0,
-        speed: 0
+        speed: 0,
       });
 
       let page = Object.values(data.data.query.pages)[0];
@@ -99,8 +118,11 @@ export default class App extends Component {
       if (!found) {
         if (page.extract && this.state.isPage) {
           this.setState({
-            text: page.extract,
+            text: page.extract.trim(" "),
           });
+          if (this.typedText) {
+            this.typedText.focus();
+          }
         } else {
           this.setState({
             isPage: false,
@@ -120,7 +142,7 @@ export default class App extends Component {
   };
 
   compareTexts = (typedText) => {
-    if (this.state.text[this.state.currentLetterIndx] === '') {
+    if (this.state.text[this.state.currentLetterIndx] === "") {
       if (typedText[typedText.length - 1] === "\n") {
         let newIndex = this.state.currentLetterIndx + 1;
         this.setState({
@@ -155,6 +177,11 @@ export default class App extends Component {
     }
   };
 
+  handleEnterPress= (event) =>{
+    console.log(event)
+    console.log(this.state)
+  }
+
   handleKeyPress = (event) => {
     let newPressedKeys = this.state.pressedKeys;
 
@@ -174,7 +201,12 @@ export default class App extends Component {
 
       if (this._ref) {
         let fraction = this.state.currentLetterIndx / this.state.text.length;
-        this._ref.scrollTop = this._ref.scrollHeight * fraction;
+        this._ref.scrollTop = this._ref.scrollHeight * fraction - 30;
+      }
+
+      if (this.typedText) {
+        let fraction = this.state.currentLetterIndx / this.state.text.length;
+        this.typedText.scrollTop = this._ref.scrollHeight * fraction - 30;
       }
     } else {
       newPressedKeys.push(event.key);
@@ -183,7 +215,7 @@ export default class App extends Component {
   };
 
   changePlaying = () => {
-    let index = (this.state.currentSrcIndex + 1) % this.sources.length
+    let index = (this.state.currentSrcIndex + 1) % this.sources.length;
     this.setState({ playing: false, currentSrcIndex: index });
   };
 
@@ -209,6 +241,7 @@ export default class App extends Component {
               type="text"
               value={this.state.title}
               autoFocus
+              onKeyPress={this.handleEnterPress}
             />
             <button onClick={() => this.handleClick()} type="button">
               Enter
@@ -234,35 +267,53 @@ export default class App extends Component {
           onEnd={this.changePlaying}
         />
         <div>{this.state.key}</div>
-        <Calculator include={this.include}/>
+        <Calculator include={this.include} />
         <div className="container">
           <PerfectScrollbar
             className="quoteDisplay"
             containerRef={(ref) => (this._ref = ref)}
           >
             <p>
-              {this.state.text.slice(0, this.state.currentLetterIndx)}
-              <mark>
-                {this.state.text.slice(
-                  this.state.currentLetterIndx,
-                  this.state.currentLetterIndx + 1
-                )}
-              </mark>
-              <span>
-                {this.state.text.slice(this.state.currentLetterIndx + 1)}
-              </span>
+              {this.state.text.length === 0 ? (
+                <span className="start-typing">
+                  Your text to type will go here...
+                </span>
+              ) : (
+                <>
+                  {this.state.text.slice(0, this.state.currentLetterIndx)}
+                  <mark>
+                    {this.state.text.slice(
+                      this.state.currentLetterIndx,
+                      this.state.currentLetterIndx + 1
+                    )}
+                  </mark>
+                  <span>
+                    {this.state.text.slice(this.state.currentLetterIndx + 1)}
+                  </span>
+                </>
+              )}
             </p>
           </PerfectScrollbar>
-          <PerfectScrollbar
-            className="quote-input"
-            containerRef={(ref) => (this._ref = ref)}
-            onKeyDown={this.handleKeyPress}
-            tabIndex="0"
-            onKeyUp={this.handleKeyUnpressed}
-            onFocus={this.calculateTime}
-          >
-            <p><span>Start typing: </span>{this.state.typedText}</p>
-          </PerfectScrollbar>
+          {this.state.text.length > 0 ? (
+            <PerfectScrollbar
+              className="quote-input"
+              tabIndex="0"
+              containerRef={(typedText) => (this.typedText = typedText)}
+              onKeyDown={this.handleKeyPress}
+              onKeyUp={this.handleKeyUnpressed}
+              onFocus={this.calculateTime}
+            >
+              <p>
+                {this.state.typedText.length === 0 ? (
+                  <span className="start-typing">Start typing: </span>
+                ) : (
+                  <>{this.state.typedText}</>
+                )}
+              </p>
+            </PerfectScrollbar>
+          ) : (
+            ""
+          )}
         </div>
       </>
     );
