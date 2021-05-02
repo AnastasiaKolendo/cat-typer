@@ -4,7 +4,7 @@ import axios from "axios";
 import Statistics from "./Statistics";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import PerfectScrollbar from "react-perfect-scrollbar";
-import Calculator from "./Calculator";
+import Keyboard from "./Keyboard";
 
 export default class App extends Component {
   constructor(props) {
@@ -19,18 +19,17 @@ export default class App extends Component {
     ];
     this.state = {
       pressedKeys: [],
-      text: "",
-      typedText: "",
+      text: null,
+      typedText: '',
       title: "",
-      currentLetterIndx: 0,
+      currentLetterIndex: 0,
       playing: false,
-      isPage: true,
       currentSrcIndex: 0,
       score: 0,
       errors: 0,
       speed: 0,
       timeElapsed: 0,
-      errorMessage: "",
+      errorMessage: null,
       redundentKeys: [
         "Tab",
         "Shift",
@@ -58,13 +57,13 @@ export default class App extends Component {
   };
 
   updateTimer = () => {
-    let newTimeElapsed = this.state.timeElapsed + 1;
+    const newTimeElapsed = this.state.timeElapsed + 1;
     this.setState({ timeElapsed: newTimeElapsed });
     this.calculateSpeed();
   };
 
   calculateSpeed = () => {
-    let newSpeed = Math.round(
+    const newSpeed = Math.round(
       (this.state.typedText.length / this.state.timeElapsed) * 60
     );
     this.setState({ speed: newSpeed });
@@ -72,7 +71,7 @@ export default class App extends Component {
 
   handleClick = async () => {
     try {
-      let data = await axios.get(
+      const data = await axios.get(
         "https://en.wikipedia.org/w/api.php?" +
           new URLSearchParams({
             origin: "*",
@@ -86,46 +85,46 @@ export default class App extends Component {
       );
 
       this.setState({
-        isPage: true,
-        score: 0,
-        errors: 0,
-        currentLetterIndx: 0,
-        text: "",
-        typedText: "",
+        errorMessage: null,
+        currentLetterIndex: 0,
+        text: null,
+        typedText: '',
         timeElapsed: 0,
         score: 0,
         errors: 0,
         speed: 0,
+        playing: false,
+        currentSrcIndex: 0,
       });
 
-      let page = Object.values(data.data.query.pages)[0];
-      let pagesCategories = page.categories;
-      let found = false;
+      const page = Object.values(data.data.query.pages)[0];
+      const pagesCategories = page.categories;
+
+      let isAmbiguous = false;
 
       if (pagesCategories) {
         pagesCategories.forEach((category) => {
           if (category.title === "Category:All article disambiguation pages") {
             this.setState({
-              isPage: false,
               errorMessage:
                 "Sorry this title is ambiguous. Please be more specific",
             });
-            found = true;
+            isAmbiguous = true;
           }
         });
       }
 
-      if (!found) {
-        if (page.extract && this.state.isPage) {
+      if (!isAmbiguous) {
+        if (page.extract) {
           this.setState({
-            text: page.extract.trim(" "),
+            text: page.extract.trim(),
           });
+
           if (this.typedText) {
             this.typedText.focus();
           }
         } else {
           this.setState({
-            isPage: false,
             errorMessage: "Sorry the article wasn't found. Try again",
           });
         }
@@ -142,44 +141,45 @@ export default class App extends Component {
   };
 
   compareTexts = (typedText) => {
-    if (this.state.text[this.state.currentLetterIndx] === "") {
+    if (this.state.text[this.state.currentLetterIndex] === "") {
       if (typedText[typedText.length - 1] === "\n") {
-        let newIndex = this.state.currentLetterIndx + 1;
+        const newIndex = this.state.currentLetterIndex + 1;
         this.setState({
-          currentLetterIndx: newIndex,
+          currentLetterIndex: newIndex,
         });
       } else {
-        let newScore = this.state.score - 1;
-        let newErrors = this.state.errors + 1;
+        const newScore = this.state.score - 1;
+        const newErrors = this.state.errors + 1;
         this.setState({ score: newScore, playing: true, errors: newErrors });
       }
     } else {
       const regex = /^\s*([ 0-9a-zA-Z><?@+'`"\~^%&\*\[\]\{\}.!#|\\\"$';,:;=/\(\)]*)\s*$/;
-      if (regex.test(this.state.text[this.state.currentLetterIndx])) {
+      if (regex.test(this.state.text[this.state.currentLetterIndex])) {
         if (
           typedText[typedText.length - 1] !==
-          this.state.text[this.state.currentLetterIndx]
+          this.state.text[this.state.currentLetterIndex]
         ) {
-          let newScore = this.state.score - 1;
-          let newErrors = this.state.errors + 1;
+          const newScore = this.state.score - 1;
+          const newErrors = this.state.errors + 1;
           this.setState({ score: newScore, playing: true, errors: newErrors });
         } else {
-          let newIndex = this.state.currentLetterIndx + 1;
-          let newScore = this.state.score + 1;
-          this.setState({ score: newScore, currentLetterIndx: newIndex });
+          const newIndex = this.state.currentLetterIndex + 1;
+          const newScore = this.state.score + 1;
+          this.setState({ score: newScore, currentLetterIndex: newIndex });
         }
       } else {
-        let newIndex = this.state.currentLetterIndx + 1;
+        const newIndex = this.state.currentLetterIndex + 1;
         this.setState({
-          currentLetterIndx: newIndex,
+          currentLetterIndex: newIndex,
         });
       }
     }
   };
 
   handleEnterPress= (event) =>{
-    console.log(event)
-    console.log(this.state)
+    if(event.key === 'Enter'){
+      this.handleClick();
+    }
   }
 
   handleKeyPress = (event) => {
@@ -199,23 +199,24 @@ export default class App extends Component {
       this.setState({ typedText: newTypedText, pressedKeys: newPressedKeys });
       this.compareTexts(newTypedText);
 
-      if (this._ref) {
-        let fraction = this.state.currentLetterIndx / this.state.text.length;
-        this._ref.scrollTop = this._ref.scrollHeight * fraction - 30;
+      if (this.quoteDisplaySpeed) {
+        const fraction = this.state.currentLetterIndex / this.state.text.length;
+        this.quoteDisplaySpeed.scrollTop = this.quoteDisplaySpeed.scrollHeight * fraction - 30;
       }
 
       if (this.typedText) {
-        let fraction = this.state.currentLetterIndx / this.state.text.length;
-        this.typedText.scrollTop = this._ref.scrollHeight * fraction - 30;
+        const fraction = this.state.currentLetterIndex / this.state.text.length;
+        this.typedText.scrollTop = this.typedText.scrollHeight * fraction - 30;
       }
     } else {
       newPressedKeys.push(event.key);
+      this.setState({ pressedKeys: newPressedKeys });
     }
     event.preventDefault();
   };
 
   changePlaying = () => {
-    let index = (this.state.currentSrcIndex + 1) % this.sources.length;
+    const index = (this.state.currentSrcIndex + 1) % this.sources.length;
     this.setState({ playing: false, currentSrcIndex: index });
   };
 
@@ -244,9 +245,9 @@ export default class App extends Component {
               onKeyPress={this.handleEnterPress}
             />
             <button onClick={() => this.handleClick()} type="button">
-              Enter
+              Enter/Start Again
             </button>
-            {!this.state.isPage ? (
+            {this.state.errorMessage ? (
               <h5 id="page-error">{this.state.errorMessage}</h5>
             ) : (
               ""
@@ -267,34 +268,34 @@ export default class App extends Component {
           onEnd={this.changePlaying}
         />
         <div>{this.state.key}</div>
-        <Calculator include={this.include} />
+        <Keyboard include={this.include} />
         <div className="container">
           <PerfectScrollbar
             className="quoteDisplay"
-            containerRef={(ref) => (this._ref = ref)}
+            containerRef={(quoteDisplaySpeed) => (this.quoteDisplaySpeed = quoteDisplaySpeed)}
           >
             <p>
-              {this.state.text.length === 0 ? (
+              {!this.state.text ? (
                 <span className="start-typing">
                   Your text to type will go here...
                 </span>
               ) : (
                 <>
-                  {this.state.text.slice(0, this.state.currentLetterIndx)}
+                  {this.state.text.slice(0, this.state.currentLetterIndex)}
                   <mark>
                     {this.state.text.slice(
-                      this.state.currentLetterIndx,
-                      this.state.currentLetterIndx + 1
+                      this.state.currentLetterIndex,
+                      this.state.currentLetterIndex + 1
                     )}
                   </mark>
                   <span>
-                    {this.state.text.slice(this.state.currentLetterIndx + 1)}
+                    {this.state.text.slice(this.state.currentLetterIndex + 1)}
                   </span>
                 </>
               )}
             </p>
           </PerfectScrollbar>
-          {this.state.text.length > 0 ? (
+          {this.state.text ? (
             <PerfectScrollbar
               className="quote-input"
               tabIndex="0"
@@ -305,7 +306,7 @@ export default class App extends Component {
             >
               <p>
                 {this.state.typedText.length === 0 ? (
-                  <span className="start-typing">Start typing: </span>
+                  <span>Start typing: </span>
                 ) : (
                   <>{this.state.typedText}</>
                 )}
