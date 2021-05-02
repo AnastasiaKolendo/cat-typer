@@ -1,15 +1,15 @@
 h3 {
   color:#862a57;
   font-family: 'Trocchi', serif; 
-  font-size: 20px; 
+  font-size: 30px; 
   font-weight: normal; 
   margin: 0;
 }
 
 body {
-  font-family: 'Trocchi', serif; 
-  margin: 0;
-  padding: 5px;
+  font-family: 'Noto Sans JP', sans-serif;
+  margin: 15px;
+  padding: 10px;
   box-sizing: border-box;
   justify-content: center;
   background-image: url("https://wallpaperaccess.com/full/253548.jpg");
@@ -17,15 +17,22 @@ body {
   background-size: 1706px 1066px;
 }
 
+.input-title{
+  background-color: #edf7f6;
+  border-radius: .5rem;
+}
+
 p{
   color:#862a57;
 }
+
 span{
   color: #eeeeee;
 }
 
 input, button {
-  margin: 5px;
+  padding: 5px;
+  font-family:courier,arial,helvetica;
 }
 
 button{
@@ -39,14 +46,16 @@ button{
   padding: 1rem;
   border: 2x solid rgb(41, 32, 32);
   border-radius: .5rem;
+  height: 100px;
 }
 
 .container {
+  margin: 10px;
   background-color: #a28089;
   padding: 1rem;
   border-radius: .5rem;
   border: 5x solid rgb(41, 32, 32);
-  box-shadow: black 3px 6px 3px;
+  height: 200px
 }
 
 .keyboard-base {
@@ -54,6 +63,7 @@ button{
   max-width: 1085px;
   padding: 5px;
   position: absolute;
+  margin: 10px;
   top: 75%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -64,7 +74,6 @@ button{
   grid-template-rows: repeat(5, 60px);
   grid-gap: 5px;
 }
-
 
 .key, .change_white, .change_red {
   background-color: rgb(207, 204, 204);
@@ -77,8 +86,7 @@ button{
 }
 
 .key:hover {
-border: 1px solid #eeeeee;
-
+  border: 1px solid #eeeeee;
 }
 
 .delete {
@@ -126,16 +134,24 @@ border: 1px solid #eeeeee;
   background-color: sienna;
 }
 
+#change_white{
+  background-color: rgb(207, 204, 204);
+}
+
+#change_red{
+  background-color: sienna;
+}
+
 .change_white{
   background-color: rgb(207, 204, 204);
 }
 
 .statistics{
-  align-items: center;
   display: flex;
   justify-content: center;
   white-space: nowrap;
 }
+
 .speed, .errors, .score {
   background-color: #c0ffc8;
   height: 20px;
@@ -152,5 +168,17 @@ mark{
  }
 
  #page-error{
-  background-color: sienna;
+  color: #77424b;
+  margin: 5px;
  }
+
+ .container2{
+  display: flex;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.quoteDisplay{
+  height: 100px;
+}
+p{white-space: pre-wrap;}
