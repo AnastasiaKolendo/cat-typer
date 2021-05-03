@@ -56,7 +56,6 @@ export default class App extends Component {
   };
 
   calculateSpeed = () => {
-    console.log(this.state.currentLetterIndex, this.state.timeElapsed);
     const newSpeed = Math.round(
       (this.state.currentLetterIndex / this.state.timeElapsed) * 60
     );
@@ -68,15 +67,15 @@ export default class App extends Component {
     try {
       const data = await axios.get(
         "https://en.wikipedia.org/w/api.php?" +
-          new URLSearchParams({
-            origin: "*",
-            action: "query",
-            titles: this.state.title,
-            format: "json",
-            prop: "extracts|categories",
-            exintro: true,
-            explaintext: true,
-          })
+        new URLSearchParams({
+          origin: "*",
+          action: "query",
+          titles: this.state.title,
+          format: "json",
+          prop: "extracts|categories",
+          exintro: true,
+          explaintext: true,
+        })
       );
 
       this.setState({
@@ -136,7 +135,6 @@ export default class App extends Component {
   };
 
   compareTexts = (expectedChar) => {
-    console.log(expectedChar, this.state.text[this.state.currentLetterIndex])
     const regex = /^\s*([ \n0-9a-zA-Z><?@+'`"\~^%&\*\[\]\{\}.!#|\\\"$';,:;=/\(\)]*)\s*$/;
     if (regex.test(this.state.text[this.state.currentLetterIndex])) {
       if (expectedChar !== this.state.text[this.state.currentLetterIndex]) {
@@ -188,15 +186,12 @@ export default class App extends Component {
             this.state.currentLetterIndex / this.state.text.length;
           this.textToType.scrollTop = Math.max(
             0,
-            this.textToType.scrollHeight * fraction - 30
+            this.textToType.scrollHeight * fraction - 75
           );
         }
 
         if (this.typedText) {
-          const fraction =
-            this.state.currentLetterIndex / this.state.text.length;
-          this.typedText.scrollTop =
-            this.typedText.scrollHeight * fraction - 30;
+          this.typedText.scrollTop = this.typedText.scrollHeight;
         }
       }
       if (this.state.currentLetterIndex === this.state.text.length - 1) {
@@ -224,12 +219,16 @@ export default class App extends Component {
   };
 
   handleKeyUnpressed = (event) => {
-    let newPressedKeys = this.state.pressedKeys;
+    if (event.key === 'Meta') {
+      this.setState({ pressedKeys: [] });
+    } else {
+      let newPressedKeys = this.state.pressedKeys;
 
-    newPressedKeys = newPressedKeys.filter((key) => {
-      return key !== event.keyCode && key !== event.key.toUpperCase();
-    });
-    this.setState({ pressedKeys: newPressedKeys });
+      newPressedKeys = newPressedKeys.filter((key) => {
+        return key !== event.keyCode && key !== event.key.toUpperCase();
+      });
+      this.setState({ pressedKeys: newPressedKeys });
+    }
   };
 
   render() {
@@ -253,8 +252,8 @@ export default class App extends Component {
             {this.state.errorMessage ? (
               <h5 id="page-error">{this.state.errorMessage}</h5>
             ) : (
-              ""
-            )}
+                ""
+              )}
           </div>
           <div>
             <Statistics
@@ -274,8 +273,17 @@ export default class App extends Component {
         <Keyboard include={this.include} />
         <div className="container">
           <PerfectScrollbar
+            tabIndex="0"
             className="text-to-type"
-            containerRef={(textToType) => (this.textToType = textToType)}
+            containerRef={(textToType) => this.textToType = textToType}
+            onFocus={() => {
+              if(this.typedText) {
+                this.typedText.focus();
+              }
+            }}
+            options={{
+              handlers: ['click-rail', 'drag-thumb', 'wheel', 'touch']
+            }}
           >
             <p>
               {!this.state.text ? (
@@ -283,17 +291,19 @@ export default class App extends Component {
                   Your text to type will go here...
                 </span>
               ) : (
-                <span>
-                  {this.state.text.slice(0, this.state.currentLetterIndex)}
-                  <strong>
-                    {this.state.text.slice(
-                      this.state.currentLetterIndex,
-                      this.state.currentLetterIndex + 1
-                    )}
-                  </strong>
-                  {this.state.text.slice(this.state.currentLetterIndex + 1)}
-                </span>
-              )}
+                  <span>
+                    <strong className="have-seen">
+                      {this.state.text.slice(0, this.state.currentLetterIndex)}
+                    </strong>
+                    <strong className="current-letter">
+                      {this.state.text.slice(
+                        this.state.currentLetterIndex,
+                        this.state.currentLetterIndex + 1
+                      )}
+                    </strong>
+                    {this.state.text.slice(this.state.currentLetterIndex + 1)}
+                  </span>
+                )}
             </p>
           </PerfectScrollbar>
           {this.state.text ? (
@@ -301,7 +311,7 @@ export default class App extends Component {
               className="typed-text"
               tabIndex="0"
               containerRef={(typedText) => (this.typedText = typedText)}
-              onKeyDown={this.handleKeyDown
+              onKeyDown={this.handleKeyDown}
               onKeyPress={this.handleKeyPress}
               onKeyUp={this.handleKeyUnpressed}
             >
@@ -309,13 +319,13 @@ export default class App extends Component {
                 {this.state.typedText.length === 0 ? (
                   <span>Start typing: </span>
                 ) : (
-                  <span>{this.state.typedText}</span>
-                )}
+                    <span>{this.state.typedText}</span>
+                  )}
               </p>
             </PerfectScrollbar>
           ) : (
-            ""
-          )}
+              ""
+            )}
         </div>
       </>
     );

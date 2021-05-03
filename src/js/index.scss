@@ -136,9 +136,9 @@ button{
   box-shadow: black 3px 6px 3px;
 }
 
-strong{
-  background-color:#c0ffc8;
- }
+// strong{
+//   background-color:#c0ffc8;
+//  }
 
  #page-error{
   color: #77424b;
@@ -160,6 +160,12 @@ strong{
 
 .text-to-type{
   height: 150px;
+}
+.have-seen{
+  color: #373052;
+}
+.current-letter{
+  background-color:#c0ffc8;
 }
 
 .typed-text{
