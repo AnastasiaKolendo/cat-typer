@@ -8,6 +8,9 @@
     "watch": "webpack --config webpack.common.js --watch",
     "start": "electron ."
   },
+  "config": {
+      "icon": "./build/icon.png"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

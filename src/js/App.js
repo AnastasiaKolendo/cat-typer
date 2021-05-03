@@ -20,7 +20,7 @@ export default class App extends Component {
     this.state = {
       pressedKeys: [],
       text: null,
-      typedText: '',
+      typedText: "",
       title: "",
       currentLetterIndex: 0,
       playing: false,
@@ -30,30 +30,23 @@ export default class App extends Component {
       speed: 0,
       timeElapsed: 0,
       errorMessage: null,
-      redundentKeys: [
-        "Tab",
-        "Shift",
-        "Alt",
-        "Meta",
-        "Control",
-        "Fn",
-        "Backspace",
-        "ArrowUp",
-        "ArrowLeft",
-        "ArrowDown",
-        "ArrowRight",
-        "Escape",
-        "CapsLock",
-      ],
     };
   }
 
-  include = (num) => {
-    return this.state.pressedKeys.includes(num);
+  include = (charCode) => {
+    return this.state.pressedKeys.includes(charCode);
   };
 
-  calculateTime = () => {
-    setInterval(this.updateTimer, 1000);
+  startTimer = () => {
+    this.stopTimer();
+    this.timer = setInterval(this.updateTimer, 1000);
+  };
+
+  stopTimer = () => {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
   };
 
   updateTimer = () => {
@@ -63,13 +56,15 @@ export default class App extends Component {
   };
 
   calculateSpeed = () => {
+    console.log(this.state.currentLetterIndex, this.state.timeElapsed);
     const newSpeed = Math.round(
-      (this.state.typedText.length / this.state.timeElapsed) * 60
+      (this.state.currentLetterIndex / this.state.timeElapsed) * 60
     );
     this.setState({ speed: newSpeed });
   };
 
   handleClick = async () => {
+    this.stopTimer();
     try {
       const data = await axios.get(
         "https://en.wikipedia.org/w/api.php?" +
@@ -88,7 +83,7 @@ export default class App extends Component {
         errorMessage: null,
         currentLetterIndex: 0,
         text: null,
-        typedText: '',
+        typedText: "",
         timeElapsed: 0,
         score: 0,
         errors: 0,
@@ -140,79 +135,87 @@ export default class App extends Component {
     });
   };
 
-  compareTexts = (typedText) => {
-    if (this.state.text[this.state.currentLetterIndex] === "") {
-      if (typedText[typedText.length - 1] === "\n") {
-        const newIndex = this.state.currentLetterIndex + 1;
-        this.setState({
-          currentLetterIndex: newIndex,
-        });
-      } else {
+  compareTexts = (expectedChar) => {
+    console.log(expectedChar, this.state.text[this.state.currentLetterIndex])
+    const regex = /^\s*([ \n0-9a-zA-Z><?@+'`"\~^%&\*\[\]\{\}.!#|\\\"$';,:;=/\(\)]*)\s*$/;
+    if (regex.test(this.state.text[this.state.currentLetterIndex])) {
+      if (expectedChar !== this.state.text[this.state.currentLetterIndex]) {
         const newScore = this.state.score - 1;
         const newErrors = this.state.errors + 1;
         this.setState({ score: newScore, playing: true, errors: newErrors });
-      }
-    } else {
-      const regex = /^\s*([ 0-9a-zA-Z><?@+'`"\~^%&\*\[\]\{\}.!#|\\\"$';,:;=/\(\)]*)\s*$/;
-      if (regex.test(this.state.text[this.state.currentLetterIndex])) {
-        if (
-          typedText[typedText.length - 1] !==
-          this.state.text[this.state.currentLetterIndex]
-        ) {
-          const newScore = this.state.score - 1;
-          const newErrors = this.state.errors + 1;
-          this.setState({ score: newScore, playing: true, errors: newErrors });
-        } else {
-          const newIndex = this.state.currentLetterIndex + 1;
-          const newScore = this.state.score + 1;
-          this.setState({ score: newScore, currentLetterIndex: newIndex });
-        }
       } else {
         const newIndex = this.state.currentLetterIndex + 1;
-        this.setState({
-          currentLetterIndex: newIndex,
-        });
+        const newScore = this.state.score + 1;
+        this.setState({ score: newScore, currentLetterIndex: newIndex });
       }
+    } else {
+      const newIndex = this.state.currentLetterIndex + 1;
+      this.setState({
+        currentLetterIndex: newIndex,
+      });
     }
   };
 
-  handleEnterPress= (event) =>{
-    if(event.key === 'Enter'){
+  handleEnterPress = (event) => {
+    if (event.key === "Enter") {
       this.handleClick();
     }
-  }
+  };
 
   handleKeyPress = (event) => {
-    let newPressedKeys = this.state.pressedKeys;
-
-    if (!this.state.redundentKeys.includes(event.key)) {
-      let newTypedText = this.state.typedText;
-
-      if (event.key === "Enter") {
-        newPressedKeys.push("\n");
-        newTypedText += "\n";
-      } else {
-        newPressedKeys.push(event.key);
-        newTypedText += event.key;
-      }
-
-      this.setState({ typedText: newTypedText, pressedKeys: newPressedKeys });
-      this.compareTexts(newTypedText);
-
-      if (this.quoteDisplaySpeed) {
-        const fraction = this.state.currentLetterIndex / this.state.text.length;
-        this.quoteDisplaySpeed.scrollTop = this.quoteDisplaySpeed.scrollHeight * fraction - 30;
-      }
-
-      if (this.typedText) {
-        const fraction = this.state.currentLetterIndex / this.state.text.length;
-        this.typedText.scrollTop = this.typedText.scrollHeight * fraction - 30;
-      }
-    } else {
-      newPressedKeys.push(event.key);
-      this.setState({ pressedKeys: newPressedKeys });
+    if (this.state.currentLetterIndex === 1) {
+      this.startTimer();
     }
+    if (this.state.currentLetterIndex < this.state.text.length) {
+      let newTypedText = this.state.typedText;
+      const typedChar = String.fromCharCode(event.charCode);
+      newTypedText += typedChar;
+
+      this.setState({ typedText: newTypedText });
+
+      if (this.state.currentLetterIndex < this.state.text.length) {
+        let expectedChar;
+        if (event.key === "Enter") {
+          expectedChar = "\n";
+        } else {
+          expectedChar = typedChar;
+        }
+
+        this.compareTexts(expectedChar);
+
+        if (this.textToType) {
+          const fraction =
+            this.state.currentLetterIndex / this.state.text.length;
+          this.textToType.scrollTop = Math.max(
+            0,
+            this.textToType.scrollHeight * fraction - 30
+          );
+        }
+
+        if (this.typedText) {
+          const fraction =
+            this.state.currentLetterIndex / this.state.text.length;
+          this.typedText.scrollTop =
+            this.typedText.scrollHeight * fraction - 30;
+        }
+      }
+      if (this.state.currentLetterIndex === this.state.text.length - 1) {
+        this.stopTimer();
+      }
+    }
+
     event.preventDefault();
+  };
+
+  handleKeyDown = (event) => {
+    if (this.state.currentLetterIndex < this.state.text.length) {
+      let newPressedKeys = this.state.pressedKeys;
+      newPressedKeys.push(event.keyCode);
+      this.setState({ pressedKeys: newPressedKeys });
+      if (event.key === "Tab") {
+        event.preventDefault();
+      }
+    }
   };
 
   changePlaying = () => {
@@ -224,7 +227,7 @@ export default class App extends Component {
     let newPressedKeys = this.state.pressedKeys;
 
     newPressedKeys = newPressedKeys.filter((key) => {
-      return key !== event.key && key !== event.key.toUpperCase();
+      return key !== event.keyCode && key !== event.key.toUpperCase();
     });
     this.setState({ pressedKeys: newPressedKeys });
   };
@@ -271,8 +274,8 @@ export default class App extends Component {
         <Keyboard include={this.include} />
         <div className="container">
           <PerfectScrollbar
-            className="quoteDisplay"
-            containerRef={(quoteDisplaySpeed) => (this.quoteDisplaySpeed = quoteDisplaySpeed)}
+            className="text-to-type"
+            containerRef={(textToType) => (this.textToType = textToType)}
           >
             <p>
               {!this.state.text ? (
@@ -280,35 +283,33 @@ export default class App extends Component {
                   Your text to type will go here...
                 </span>
               ) : (
-                <>
+                <span>
                   {this.state.text.slice(0, this.state.currentLetterIndex)}
-                  <mark>
+                  <strong>
                     {this.state.text.slice(
                       this.state.currentLetterIndex,
                       this.state.currentLetterIndex + 1
                     )}
-                  </mark>
-                  <span>
-                    {this.state.text.slice(this.state.currentLetterIndex + 1)}
-                  </span>
-                </>
+                  </strong>
+                  {this.state.text.slice(this.state.currentLetterIndex + 1)}
+                </span>
               )}
             </p>
           </PerfectScrollbar>
           {this.state.text ? (
             <PerfectScrollbar
-              className="quote-input"
+              className="typed-text"
               tabIndex="0"
               containerRef={(typedText) => (this.typedText = typedText)}
-              onKeyDown={this.handleKeyPress}
+              onKeyDown={this.handleKeyDown
+              onKeyPress={this.handleKeyPress}
               onKeyUp={this.handleKeyUnpressed}
-              onFocus={this.calculateTime}
             >
               <p>
                 {this.state.typedText.length === 0 ? (
                   <span>Start typing: </span>
                 ) : (
-                  <>{this.state.typedText}</>
+                  <span>{this.state.typedText}</span>
                 )}
               </p>
             </PerfectScrollbar>

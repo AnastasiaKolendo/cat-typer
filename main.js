@@ -1,4 +1,3 @@
-
 const { BrowserWindow, app, ipcMain, Notification } = require('electron');
 const path = require('path');
 const EventEmitter = require('events')
@@ -9,9 +8,10 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
+    icon: path.join(app.getAppPath(), 'build/icon.png'),
     backgroundColor: "white",
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false,
       worldSafeExecuteJavaScript: true,
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')

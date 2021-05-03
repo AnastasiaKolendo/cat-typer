@@ -136,7 +136,7 @@ button{
   box-shadow: black 3px 6px 3px;
 }
 
-mark{
+strong{
   background-color:#c0ffc8;
  }
 
@@ -153,16 +153,16 @@ mark{
 .container {
   opacity: 0.85;
   margin: 5px;
-  background-color: #a28089;
+  background-color: #ac999e;
   padding: 1rem;
   border-radius: .5rem;
 }
 
-.quoteDisplay{
+.text-to-type{
   height: 150px;
 }
 
-.quote-input{
+.typed-text{
   background-color: rgb(207, 204, 204);
   padding: 1rem;
   border-radius: .5rem;
@@ -171,9 +171,13 @@ mark{
 
 p{
   white-space: pre-wrap;
-  color:#862a57;
+  color:#6b2346;
 }
 
 .start-typing{
   color:  #373052;
+}
+
+span{
+  display:block;
 }
