@@ -20,4 +20,4 @@ Electron, React, Node.js, Howler, PerfectScrollbar, Babel, Webpack and Axios lib
 
 ## The App
 
-![Screenshot](screenshot.png)
+![Screenshot](/Screen Shot 2021-06-02 at 11.21.14 PM.png)
