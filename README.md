@@ -1,4 +1,3 @@
-# cat-typer
 ## CAT TYPER
 
 Built a desktop typing training application. 
@@ -11,7 +10,9 @@ Electron, React, Node.js, Howler, PerfectScrollbar, Babel, Webpack and Axios lib
 
 ## Viewing Published App
 
-Testing this app requires installing the app.
+1. Install the app this link: 
+2. Add an Wikipedia article title to the search input field.
+3. Start typing
 
 ## Authors
 
